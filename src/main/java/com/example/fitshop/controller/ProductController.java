@@ -3,9 +3,11 @@ package com.example.fitshop.controller;
 import com.example.fitshop.converter.ProductToProductDTO;
 import com.example.fitshop.dto.OpinionDTO;
 import com.example.fitshop.dto.ProductDTO;
+import com.example.fitshop.model.AppUser;
 import com.example.fitshop.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,8 +43,9 @@ public class ProductController {
 
     @PostMapping("/add/product/opinion/{productId}")
     public ResponseEntity<Void> addProductOpinion(@PathVariable("productId") Long productId,
-                                                  @RequestBody OpinionDTO opinionDTO){
-        productService.addProductOpinion(productId, opinionDTO);
+                                                  @RequestBody OpinionDTO opinionDTO,
+                                                  @AuthenticationPrincipal AppUser appUser){
+        productService.addProductOpinion(productId, opinionDTO, appUser);
         return ResponseEntity.ok().build();
     }
 }
