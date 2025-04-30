@@ -32,8 +32,8 @@ public class Product {
     private int quantity;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @JoinColumn(name = "sub_category_id")
+    private SubCategory subCategory;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Shipper> shippers;

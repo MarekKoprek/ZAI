@@ -94,10 +94,6 @@
 
 
     <changeSet id="add-category-id-to-subcategory" author="Marek">
-        <addColumn tableName="sub_category">
-            <column name="category_id" type="BIGINT"/>
-        </addColumn>
-
         <update tableName="sub_category">
             <column name="category_id"
                     valueComputed="(SELECT id FROM category WHERE name = 'napoje')"/>
