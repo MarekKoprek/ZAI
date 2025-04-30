@@ -185,5 +185,20 @@
         </update>
     </changeSet>
 
+    <changeSet id="insert-product-data" author="Marek">
+        <insert tableName="product">
+            <column name="name" value="WPC 82"/>
+            <column name="price" value="49"/>
+            <column name="quantity" value="14"/>
+            <column name="sub_category_id" valueComputed="(SELECT id FROM sub_category WHERE name = 'białka')"/>
+        </insert>
+
+        <insert tableName="product">
+            <column name="name" value="Shaker 700ml"/>
+            <column name="price" value="14"/>
+            <column name="quantity" value="52"/>
+            <column name="sub_category_id" valueComputed="(SELECT id FROM sub_category WHERE name = 'shakery')"/>
+        </insert>
+    </changeSet>
 
 </databaseChangeLog>
