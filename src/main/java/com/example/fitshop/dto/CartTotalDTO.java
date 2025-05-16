@@ -7,6 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class OpinionDTO {
-    private int rating;
+public class CartTotalDTO {
+    double value;
 }

@@ -3,6 +3,7 @@ package com.example.fitshop.service;
 import com.example.fitshop.converter.ProductToProductDTO;
 import com.example.fitshop.dto.OpinionDTO;
 import com.example.fitshop.dto.ProductDTO;
+import com.example.fitshop.dto.ProductFilterDTO;
 import com.example.fitshop.model.AppUser;
 import com.example.fitshop.model.Opinion;
 import com.example.fitshop.model.Product;
@@ -35,20 +36,56 @@ public class ProductService {
         return product;
     }
 
-    public List<ProductDTO> getProducts(){
-        return productRepo.findAll().stream()
+    public List<ProductDTO> getProducts(ProductFilterDTO productFilterDTO){
+        List<Product> products = productRepo.findAll();
+        products = products.stream()
+                .filter(product -> product.getPrice() >= productFilterDTO.getMinPrice())
+                .toList();
+        products = products.stream()
+                .filter(product -> getProductRating(product) >= productFilterDTO.getMinRating())
+                .toList();
+        if(productFilterDTO.getMaxPrice() > 0){
+            products = products.stream()
+                    .filter(product -> product.getPrice() <= productFilterDTO.getMaxPrice())
+                    .toList();
+        }
+        return products.stream()
                 .map(productToProductDTO::convert)
                 .collect(Collectors.toList());
     }
 
-    public List<ProductDTO> getProductsBySubCategoryId(Long subCategoryId){
-        return productRepo.findAllBySubCategoryId(subCategoryId).stream()
+    public List<ProductDTO> getProductsBySubCategoryId(Long subCategoryId, ProductFilterDTO productFilterDTO){
+        List<Product> products = productRepo.findAllBySubCategoryId(subCategoryId);
+        products = products.stream()
+                .filter(product -> product.getPrice() >= productFilterDTO.getMinPrice())
+                .toList();
+        products = products.stream()
+                .filter(product -> getProductRating(product) >= productFilterDTO.getMinRating())
+                .toList();
+        if(productFilterDTO.getMaxPrice() > 0){
+            products = products.stream()
+                    .filter(product -> product.getPrice() <= productFilterDTO.getMaxPrice())
+                    .toList();
+        }
+        return products.stream()
                 .map(productToProductDTO::convert)
                 .collect(Collectors.toList());
     }
 
-    public List<ProductDTO> getProductsByCategoryId(Long categoryId){
-        return productRepo.findAllBySubCategoryCategoryId(categoryId).stream()
+    public List<ProductDTO> getProductsByCategoryId(Long categoryId, ProductFilterDTO productFilterDTO){
+        List<Product> products = productRepo.findAllBySubCategoryCategoryId(categoryId);
+        products = products.stream()
+                .filter(product -> product.getPrice() >= productFilterDTO.getMinPrice())
+                .toList();
+        products = products.stream()
+                .filter(product -> getProductRating(product) >= productFilterDTO.getMinRating())
+                .toList();
+        if(productFilterDTO.getMaxPrice() > 0){
+            products = products.stream()
+                    .filter(product -> product.getPrice() <= productFilterDTO.getMaxPrice())
+                    .toList();
+        }
+        return products.stream()
                 .map(productToProductDTO::convert)
                 .collect(Collectors.toList());
     }
@@ -63,5 +100,9 @@ public class ProductService {
             opinion.setRating(opinionDTO.getRating());
             opinionRepo.save(opinion);
         }
+    }
+
+    public double getProductRating(Product product){
+        return product.getOpinions().stream().mapToInt(Opinion::getRating).average().orElse(0);
     }
 }

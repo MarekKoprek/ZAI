@@ -1,10 +1,11 @@
 package com.example.fitshop.controller;
 
 import com.example.fitshop.dto.CartDTO;
+import com.example.fitshop.dto.CartTotalDTO;
+import com.example.fitshop.dto.PurchaseDTO;
 import com.example.fitshop.model.AppUser;
-import com.example.fitshop.model.Cart;
+import com.example.fitshop.model.ClientOrder;
 import com.example.fitshop.service.CartService;
-import com.example.fitshop.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -49,4 +50,16 @@ public class CartController {
         return ResponseEntity.ok().body(cartService.lowerCartQuantity(id, appUser));
     }
 
+    @GetMapping("/cart/total/value/{userId}")
+    public ResponseEntity<CartTotalDTO> getTotalCartValue(@PathVariable("userId") Long id,
+                                                          @AuthenticationPrincipal AppUser appUser){
+        return ResponseEntity.ok().body(cartService.getTotalCartValue(id, appUser));
+    }
+
+    @PostMapping("/cart/purchase/{userId}")
+    public ResponseEntity<ClientOrder> purchaseCart(@PathVariable("userId") Long id,
+                                                    @RequestBody PurchaseDTO purchaseDTO,
+                                                    @AuthenticationPrincipal AppUser appUser){
+        return ResponseEntity.ok().body(cartService.purchaseCart(id, appUser, purchaseDTO));
+    }
 }

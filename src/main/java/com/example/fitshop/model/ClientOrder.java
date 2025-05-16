@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Data
@@ -21,6 +22,9 @@ public class ClientOrder {
     private PaymentType paymentType;
 
     private double amount;
+
+    @OneToMany
+    private List<Product> products;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
