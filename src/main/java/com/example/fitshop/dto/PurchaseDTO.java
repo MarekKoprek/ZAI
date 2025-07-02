@@ -10,8 +10,8 @@ import java.util.List;
 @Setter
 public class PurchaseDTO {
     List<CartDTO> carts;
-    ShipperDTO shipper;
-    PaymentType paymentType;
+    String shipperName;
+    String paymentType;
     double amount;
     AddressDTO address;
 }

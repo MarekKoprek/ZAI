@@ -18,4 +18,5 @@ public class ProductDTO {
     private List<ProductImageDTO> images;
     private double rating;
     private List<ShipperDTO> shippers;
+    private SubCategoryDTO subCategory;
 }

@@ -1,6 +1,7 @@
 package com.example.fitshop.converter;
 
 import com.example.fitshop.dto.ProductDTO;
+import com.example.fitshop.dto.SubCategoryDTO;
 import com.example.fitshop.model.Opinion;
 import com.example.fitshop.model.Product;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,8 @@ public class ProductToProductDTO {
                 rating,
                 product.getShippers().stream()
                         .map(shipperToShipperDTO::convert)
-                        .collect(Collectors.toList())
+                        .collect(Collectors.toList()),
+                new SubCategoryDTO(product.getSubCategory().getId(), product.getSubCategory().getName())
         );
     }
 }

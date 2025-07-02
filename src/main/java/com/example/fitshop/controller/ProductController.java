@@ -7,15 +7,19 @@ import com.example.fitshop.dto.ProductFilterDTO;
 import com.example.fitshop.model.AppUser;
 import com.example.fitshop.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/product")
 public class ProductController {
 
     private final ProductToProductDTO productToProductDTO;
@@ -28,14 +32,18 @@ public class ProductController {
     }
 
     @GetMapping("/get/products")
-    public ResponseEntity<List<ProductDTO>> getProducts(@RequestBody ProductFilterDTO productFilterDTO){
-        return ResponseEntity.ok().body(productService.getProducts(productFilterDTO));
+    public ResponseEntity<List<ProductDTO>> getProducts(@RequestParam(required = false) Double minPrice,
+                                                        @RequestParam(required = false) Double maxPrice,
+                                                        @RequestParam(required = false) Double minRating){
+        return ResponseEntity.ok().body(productService.getProducts(minPrice, maxPrice, minRating));
     }
 
     @GetMapping("/get/products/sub/category/{id}")
     public ResponseEntity<List<ProductDTO>> getProductsBySubCategoryId(@PathVariable("id") Long id,
-                                                                       @RequestBody ProductFilterDTO productFilterDTO){
-        return ResponseEntity.ok().body(productService.getProductsBySubCategoryId(id, productFilterDTO));
+                                                                       @RequestParam(required = false) Double minPrice,
+                                                                       @RequestParam(required = false) Double maxPrice,
+                                                                       @RequestParam(required = false) Double minRating){
+        return ResponseEntity.ok().body(productService.getProductsBySubCategoryId(id, minPrice, maxPrice, minRating));
     }
 
     @GetMapping("/get/products/category/{id}")
@@ -46,9 +54,14 @@ public class ProductController {
 
     @PostMapping("/add/product/opinion/{productId}")
     public ResponseEntity<Void> addProductOpinion(@PathVariable("productId") Long productId,
-                                                  @RequestBody OpinionDTO opinionDTO,
-                                                  @AuthenticationPrincipal AppUser appUser){
-        productService.addProductOpinion(productId, opinionDTO, appUser);
+                                                  @RequestBody OpinionDTO opinionDTO){
+        productService.addProductOpinion(productId, opinionDTO);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/get/products/paged")
+    public ResponseEntity<Page<ProductDTO>> getPagedProducts(@RequestParam("page") int page,
+                                                             @RequestParam("size") int size) {
+        return ResponseEntity.ok().body(productService.getPagedProducts(PageRequest.of(page, size)));
     }
 }

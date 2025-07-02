@@ -8,4 +8,6 @@ import java.util.List;
 public interface SubCategoryRepo extends JpaRepository<SubCategory, Long> {
 
     List<SubCategory> findAllByCategoryId(Long categoryId);
+
+    SubCategory findFirstById(Long subCategoryId);
 }

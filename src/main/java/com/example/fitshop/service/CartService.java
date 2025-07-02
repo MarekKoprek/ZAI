@@ -6,10 +6,7 @@ import com.example.fitshop.dto.CartDTO;
 import com.example.fitshop.dto.CartTotalDTO;
 import com.example.fitshop.dto.PurchaseDTO;
 import com.example.fitshop.model.*;
-import com.example.fitshop.repository.AddressRepo;
-import com.example.fitshop.repository.CartRepo;
-import com.example.fitshop.repository.ClientOrderRepo;
-import com.example.fitshop.repository.ShipperRepo;
+import com.example.fitshop.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -35,6 +35,9 @@ public class CartService {
     private final AddressRepo addressRepo;
     private final ShipperRepo shipperRepo;
 
+    private final AuthService authService;
+    private final ProductRepo productRepo;
+
     public Cart getCartById(Long id){
         Cart cart = cartRepo.findFirstById(id);
         if(cart == null){
@@ -43,77 +46,85 @@ public class CartService {
         return cart;
     }
 
-    public List<Cart> getCartsByUser(AppUser appUser){
-        return cartRepo.findAllByUser(appUser);
+    public List<Cart> getCartsByUser(){
+        AppUser user = authService.getAuthenticatedUser();
+        return cartRepo.findAllByUser(user);
     }
 
-    public CartDTO addProduct(Long productId, AppUser appUser){
+    public CartDTO addProduct(Long productId){
+        AppUser user = authService.getAuthenticatedUser();
         Product product = productService.getProductById(productId);
-        return cartToCartDTO.convert(cartRepo.save(new Cart(null, 1, appUser, product)));
+        Optional<Cart> cart = cartRepo.findCartByProductAndUser(product, user);
+        if(cart.isPresent()){
+            throw new IllegalArgumentException("Produkt już w koszyku");
+        }
+        return cartToCartDTO.convert(cartRepo.save(new Cart(null, 1, user, product)));
     }
 
-    public void removeCart(Long id, AppUser appUser){
+    public void removeCart(Long id){
         Cart cart = getCartById(id);
-        if(cart.getUser() != appUser){
+        AppUser user = authService.getAuthenticatedUser();
+        if(cart.getUser() != user){
             throw new AccessDeniedException("Niepoprawny użytkownik");
         }
         cartRepo.delete(cart);
     }
 
-    public List<CartDTO> getCartProducts(AppUser appUser){
-        return getCartsByUser(appUser).stream()
+    public List<CartDTO> getCartProducts(){
+        return getCartsByUser().stream()
                 .map(cartToCartDTO::convert)
                 .collect(Collectors.toList());
     }
 
-    public CartDTO addCartQuantity(Long id, AppUser appUser){
+    public CartDTO addCartQuantity(Long id){
         Cart cart = getCartById(id);
-        if(cart.getUser() != appUser){
+        AppUser user = authService.getAuthenticatedUser();
+        if(cart.getUser() != user){
             throw new AccessDeniedException("Niepoprawny użytkownik");
         }
         int quantity = Math.min(cart.getProduct().getQuantity(), cart.getQuantity() + 1);
         cart.setQuantity(quantity);
-        return cartToCartDTO.convert(cart);
+        return cartToCartDTO.convert(cartRepo.save(cart));
     }
 
-    public CartDTO lowerCartQuantity(Long id, AppUser appUser){
+    public CartDTO lowerCartQuantity(Long id){
         Cart cart = getCartById(id);
-        if(cart.getUser() != appUser){
+        AppUser user = authService.getAuthenticatedUser();
+        if(cart.getUser() != user){
             throw new AccessDeniedException("Niepoprawny użytkownik");
         }
-        int quantity = Math.max(0, cart.getQuantity() - 1);
+        int quantity = Math.max(1, cart.getQuantity() - 1);
         cart.setQuantity(quantity);
-        return cartToCartDTO.convert(cart);
+        return cartToCartDTO.convert(cartRepo.save(cart));
     }
 
-    public CartTotalDTO getTotalCartValue(Long userId, AppUser appUser){
-        if(!appUser.getId().equals(userId)){
-            throw new AccessDeniedException("Niepoprawny użytkownik");
-        }
-        List<Cart> carts = getCartsByUser(appUser);
-        return new CartTotalDTO(carts.stream().mapToDouble(cart -> cart.getProduct().getPrice()).sum());
+    public CartTotalDTO getTotalCartValue(){
+        List<Cart> carts = getCartsByUser();
+        return new CartTotalDTO(carts.stream().mapToDouble(cart -> cart.getProduct().getPrice() * cart.getQuantity()).sum());
     }
 
     @Transactional
-    public ClientOrder purchaseCart(Long userId, AppUser appUser, PurchaseDTO purchaseDTO){
-        if(!appUser.getId().equals(userId)){
-            throw new AccessDeniedException("Niepoprawny użytkownik");
-        }
+    public ClientOrder purchaseCart(PurchaseDTO purchaseDTO){
+        AppUser user = authService.getAuthenticatedUser();
         ClientOrder clientOrder = new ClientOrder();
-        purchaseDTO.getCarts().forEach(cart -> {
-            clientOrder.getProducts().add(productService.getProductById(cart.getProductDTO().getId()));
-        });
+        List<Cart> carts = getCartsByUser();
         clientOrder.setDate(LocalDate.now());
-        clientOrder.setPaymentType(purchaseDTO.getPaymentType());
+        clientOrder.setPaymentType(purchaseDTO.getPaymentType().equals("card") ? PaymentType.CARD : PaymentType.BLIK);
         clientOrder.setAmount(purchaseDTO.getAmount());
-        clientOrder.setUser(appUser);
-        if(purchaseDTO.getAddress().getCountry().isEmpty()){
-            clientOrder.setAddress(appUser.getAddress());
-        }
-        else{
-            clientOrder.setAddress(addressRepo.save(addressDTOtoAddress.convert(purchaseDTO.getAddress())));
-        }
-        clientOrder.setShipper(shipperRepo.findByName(purchaseDTO.getShipper().getName()));
-        return clientOrderRepo.save(clientOrder);
+        clientOrder.setUser(user);
+        clientOrder.setAddress(addressRepo.save(addressDTOtoAddress.convert(purchaseDTO.getAddress())));
+        clientOrder.setShipper(shipperRepo.findByName(purchaseDTO.getShipperName()));
+        ClientOrder order = clientOrderRepo.save(clientOrder);
+
+        carts.forEach(cart -> {
+            Product product = cart.getProduct();
+            order.getProducts().add(product);
+            product.setQuantity(product.getQuantity() - cart.getQuantity());
+            productRepo.save(product);
+        });
+
+        cartRepo.deleteAllByUser(user);
+
+        return order;
     }
 }

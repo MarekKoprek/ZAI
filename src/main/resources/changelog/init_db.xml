@@ -194,10 +194,107 @@
         </insert>
 
         <insert tableName="product">
+            <column name="name" value="Dobre WHEY biała czekolada"/>
+            <column name="price" value="65"/>
+            <column name="quantity" value="11"/>
+            <column name="sub_category_id" valueComputed="(SELECT id FROM sub_category WHERE name = 'białka')"/>
+        </insert>
+
+        <insert tableName="product">
+            <column name="name" value="Dobre WHEY mleczny baton"/>
+            <column name="price" value="65"/>
+            <column name="quantity" value="11"/>
+            <column name="sub_category_id" valueComputed="(SELECT id FROM sub_category WHERE name = 'białka')"/>
+        </insert>
+
+        <insert tableName="product">
+            <column name="name" value="WPC PLUS"/>
+            <column name="price" value="58"/>
+            <column name="quantity" value="27"/>
+            <column name="sub_category_id" valueComputed="(SELECT id FROM sub_category WHERE name = 'białka')"/>
+        </insert>
+
+        <insert tableName="product">
             <column name="name" value="Shaker 700ml"/>
             <column name="price" value="14"/>
             <column name="quantity" value="52"/>
             <column name="sub_category_id" valueComputed="(SELECT id FROM sub_category WHERE name = 'shakery')"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert_product_images" author="Marek">
+        <insert tableName="product_image">
+            <column name="url" value="WPC80_1.webp"/>
+            <column name="product_id" valueComputed="(SELECT id FROM product WHERE name = 'WPC 82')"/>
+        </insert>
+
+        <insert tableName="product_image">
+            <column name="url" value="WPC80_2.webp"/>
+            <column name="product_id" valueComputed="(SELECT id FROM product WHERE name = 'WPC 82')"/>
+        </insert>
+
+        <insert tableName="product_image">
+            <column name="url" value="WPC80_3.webp"/>
+            <column name="product_id" valueComputed="(SELECT id FROM product WHERE name = 'WPC 82')"/>
+        </insert>
+
+        <insert tableName="product_image">
+            <column name="url" value="Dobre_WHEY_biala_czekolada_1.jpg"/>
+            <column name="product_id" valueComputed="(SELECT id FROM product WHERE name = 'Dobre WHEY biała czekolada')"/>
+        </insert>
+
+        <insert tableName="product_image">
+            <column name="url" value="Dobre_WHEY_biala_czekolada_2.webp"/>
+            <column name="product_id" valueComputed="(SELECT id FROM product WHERE name = 'Dobre WHEY biała czekolada')"/>
+        </insert>
+
+        <insert tableName="product_image">
+            <column name="url" value="Dobre_WHEY_mleczny_baton_1.jpg"/>
+            <column name="product_id" valueComputed="(SELECT id FROM product WHERE name = 'Dobre WHEY mleczny baton')"/>
+        </insert>
+
+        <insert tableName="product_image">
+            <column name="url" value="Dobre_WHEY_mleczny_baton_2.webp"/>
+            <column name="product_id" valueComputed="(SELECT id FROM product WHERE name = 'Dobre WHEY mleczny baton')"/>
+        </insert>
+
+        <insert tableName="product_image">
+            <column name="url" value="WPC_PLUS_1.jpg"/>
+            <column name="product_id" valueComputed="(SELECT id FROM product WHERE name = 'WPC PLUS')"/>
+        </insert>
+
+        <insert tableName="product_image">
+            <column name="url" value="WPC_PLUS_2.jpg"/>
+            <column name="product_id" valueComputed="(SELECT id FROM product WHERE name = 'WPC PLUS')"/>
+        </insert>
+
+        <insert tableName="product_image">
+            <column name="url" value="shaker_1.webp"/>
+            <column name="product_id" valueComputed="(SELECT id FROM product WHERE name = 'Shaker 700ml')"/>
+        </insert>
+
+        <insert tableName="product_image">
+            <column name="url" value="shaker_2.webp"/>
+            <column name="product_id" valueComputed="(SELECT id FROM product WHERE name = 'Shaker 700ml')"/>
+        </insert>
+
+        <insert tableName="product_image">
+            <column name="url" value="shaker_3.webp"/>
+            <column name="product_id" valueComputed="(SELECT id FROM product WHERE name = 'Shaker 700ml')"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert_shippers" author="Marek">
+        <insert tableName="shipper">
+            <column name="name" value="FedEx" />
+        </insert>
+
+        <insert tableName="shipper">
+            <column name="name" value="InPost" />
+        </insert>
+
+        <insert tableName="shipper">
+            <column name="name" value="UPS" />
         </insert>
     </changeSet>
 

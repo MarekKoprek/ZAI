@@ -6,7 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -23,8 +25,8 @@ public class ClientOrder {
 
     private double amount;
 
-    @OneToMany
-    private List<Product> products;
+    @ManyToMany
+    private Set<Product> products = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "user_id")

@@ -1,45 +1,46 @@
 package com.example.fitshop.controller;
 
-import com.example.fitshop.dto.LoginRequestDTO;
-import com.example.fitshop.dto.LoginResponseDTO;
+import com.example.fitshop.converter.UserToUserDto;
+import com.example.fitshop.dto.*;
 import com.example.fitshop.security.JwtService;
-import com.example.fitshop.service.UserDetailsServiceImpl;
+import com.example.fitshop.service.AuthService;
+import com.example.fitshop.service.MyUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
-    private final UserDetailsServiceImpl userDetailsService;
+    private final AuthService authService;
+
+    private final UserToUserDto userToUserDto;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequestDTO request) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getLogin(), request.getPassword())
-            );
+    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginUserDto loginUserDto) {
+        return ResponseEntity.ok().body(
+                authService.loginUser(loginUserDto)
+        );
+    }
 
-            UserDetails user = userDetailsService.loadUserByUsername(request.getLogin());
+    @PostMapping("/register")
+    public ResponseEntity<UserDto> register(@RequestBody RegisterUserDto registerUserDto) {
+        return ResponseEntity.ok().body(
+                userToUserDto.convert(authService.registerUser(registerUserDto))
+        );
+    }
 
-            String jwtToken = jwtService.generateToken(user.getUsername());
-
-            return ResponseEntity.ok(jwtToken);
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(401).body("Nieprawidłowe dane logowania.");
-        }
+    @GetMapping("/user")
+    public ResponseEntity<UserDto> currentUser() {
+        return ResponseEntity.ok().body(
+                userToUserDto.convert(authService.getAuthenticatedUser())
+        );
     }
 }
